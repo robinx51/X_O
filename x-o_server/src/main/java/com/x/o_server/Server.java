@@ -15,26 +15,21 @@ public class Server {
     private final static int PORT = 8080;
     
     private class RequestDecoder extends ReplayingDecoder<RequestData> {
-
         private final Charset charset = Charset.forName("UTF-8");
 
         @Override
-        protected void decode(ChannelHandlerContext ctx, 
-          ByteBuf in, List<Object> out) throws Exception {
-
+        protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
             RequestData data = new RequestData();
             data.setIntValue(in.readInt());
             int strLen = in.readInt();
-            data.setStringValue(
-              in.readCharSequence(strLen, charset).toString());
+            data.setStringValue(in.readCharSequence(strLen, charset).toString());
             out.add(data);
         }
     }
     
     private class ResponseDataEncoder extends MessageToByteEncoder<ResponseData> {
         @Override
-        protected void encode(ChannelHandlerContext ctx, 
-            ResponseData msg, ByteBuf out) throws Exception {
+        protected void encode(ChannelHandlerContext ctx, ResponseData msg, ByteBuf out) throws Exception {
             out.writeInt(msg.getIntValue());
         }
     }

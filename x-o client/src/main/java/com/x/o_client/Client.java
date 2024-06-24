@@ -10,6 +10,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Scanner;
 
 public class Client {
     public static class RequestDataEncoder extends MessageToByteEncoder<RequestData> {
@@ -54,12 +55,29 @@ public class Client {
                 public void initChannel(SocketChannel ch) 
                   throws Exception {
                     ch.pipeline().addLast(new RequestDataEncoder(), 
-                      new ResponseDataDecoder(), new ClientHandler());
+                      new ResponseDataDecoder(), new ServerHandler());
                 }
             });
 
             ChannelFuture f = b.connect(host, port).sync();
-
+            
+            {
+                Scanner console = new Scanner(System.in);
+                while (true) {
+                    String str = console.nextLine();
+                    if ("stop".equals(str) || "стоп".equals(str)) {
+                        f.channel().close();
+                        break;
+                    } else {
+                        RequestData msg = new RequestData();
+                        msg.setIntValue(Integer.parseInt(str));
+                        msg.setStringValue(
+                          "all work and no play makes jack a dull boy");
+                        f.channel().writeAndFlush(msg);
+                    }
+                }
+            }
+            
             f.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();

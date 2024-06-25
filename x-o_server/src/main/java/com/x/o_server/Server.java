@@ -9,10 +9,38 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 import java.nio.charset.Charset;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Server {
-    private final static int PORT = 8080;
+    private final int PORT;
+    private final LinkedList<Channel> list;
+    private static Channel serverChannel;
+    
+    public Server() {
+        PORT = 8080;
+        list = new LinkedList<>();
+    }
+    
+    private static void workLoop() {
+        Scanner console = new Scanner(System.in);
+        while (true) {
+            String str = console.nextLine();
+            if ("stop".equals(str) || "стоп".equals(str)) {
+                StopServer();
+                break;
+            } else { }
+        }
+    }
+    
+    private static void StopServer() {
+        if (serverChannel != null) {
+            System.out.println("Closing server...");
+            serverChannel.close();
+            serverChannel = null;
+        }
+    }
     
     private class RequestDecoder extends ReplayingDecoder<RequestData> {
         private final Charset charset = Charset.forName("UTF-8");
@@ -33,33 +61,46 @@ public class Server {
             out.writeInt(msg.getIntValue());
         }
     }
+    
+    public void run() {
+        Thread serverThread = new Thread(() -> {
+            EventLoopGroup bossGroup = new NioEventLoopGroup();
+            EventLoopGroup workerGroup = new NioEventLoopGroup();
+            try {
+                ServerBootstrap b = new ServerBootstrap();
+                b.group(bossGroup, workerGroup)
+                  .channel(NioServerSocketChannel.class)
+                  .childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    public void initChannel(SocketChannel ch) throws Exception {
+                        ch.pipeline().addLast(new RequestDecoder(), 
+                          new ResponseDataEncoder(), 
+                          new ClientHandler());
+                        list.add(ch.read());
+                        System.out.println("Добавлен канал");
+                    }
+                }).option(ChannelOption.SO_BACKLOG, 128)
+                  .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-    public static void main(String[] args) throws Exception {
-        new Server().run();
+                ChannelFuture channelFuture = b.bind(PORT).sync();
+                serverChannel = channelFuture.channel();
+                System.out.println("Server started on " + PORT);
+                
+                serverChannel.closeFuture().sync();
+            } catch (InterruptedException e) {
+                System.err.println(e.getMessage());
+            } finally {
+                workerGroup.shutdownGracefully();
+                bossGroup.shutdownGracefully();
+            }
+        });
+        serverThread.setName("server-thread");
+        serverThread.setDaemon(true);
+        serverThread.start();
     }
     
-    public void run() throws Exception {
-        EventLoopGroup bossGroup = new NioEventLoopGroup();
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
-        try {
-            ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup, workerGroup)
-              .channel(NioServerSocketChannel.class)
-              .childHandler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new RequestDecoder(), 
-                      new ResponseDataEncoder(), 
-                      new ClientHandler());
-                }
-            }).option(ChannelOption.SO_BACKLOG, 128)
-              .childOption(ChannelOption.SO_KEEPALIVE, true);
-
-            ChannelFuture f = b.bind(PORT).sync();
-            f.channel().closeFuture().sync();
-        } finally {
-            workerGroup.shutdownGracefully();
-            bossGroup.shutdownGracefully();
-        }
+    public static void main(String[] args) {
+        new Server().run();
+        workLoop();
     }
 }

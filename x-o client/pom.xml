@@ -63,7 +63,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>com.x.o_client.Form</mainClass>
+                    <mainClass>com.x_o_client.Form</mainClass>
                 </configuration>
             </plugin>
 
@@ -81,7 +81,7 @@
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.x.o_client.Form</mainClass>
+                                    <mainClass>com.x_o_client.Form</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
@@ -94,7 +94,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <exec.mainClass>com.x.o_client.Form</exec.mainClass>
+        <exec.mainClass>com.x_o_client.Form</exec.mainClass>
     </properties>
     <name>x-o client</name>
 </project>

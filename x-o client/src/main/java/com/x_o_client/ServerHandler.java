@@ -8,16 +8,16 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         RequestData msg = new RequestData();
-        msg.setIntValue(123);
+        msg.setIntValue(0);
         msg.setStringValue(
-          "all work and no play makes jack a dull boy");
-        ChannelFuture future = ctx.writeAndFlush(msg);
+          "Hello, server!");
+        ctx.writeAndFlush(msg);
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ResponseData value = (ResponseData) msg;
-        System.out.println(value.getIntValue());
+        System.out.println(value.getStringValue());
         //ctx.close();
     }
     

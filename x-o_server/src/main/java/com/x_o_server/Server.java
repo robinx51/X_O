@@ -1,5 +1,7 @@
 package com.x_o_server;
 
+import com.x_o_server.data.ResponseData;
+import com.x_o_server.data.RequestData;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -15,7 +17,7 @@ import java.util.Scanner;
 
 public class Server {
     private final int PORT;
-    private final LinkedList<Channel> list;
+    private static LinkedList<Channel> list;
     private static Channel serverChannel;
     
     public Server() {
@@ -30,7 +32,14 @@ public class Server {
             if ("stop".equals(str) || "стоп".equals(str)) {
                 StopServer();
                 break;
-            } else { }
+            } else {
+                String[] data = str.split(" ", 2);
+                ResponseData responseData = new ResponseData();
+                responseData.setStringValue((data[1]));
+                int num = Integer.parseInt(data[0]);
+                if (list.size() > num )
+                    list.get(num).writeAndFlush(responseData);
+            }
         }
     }
     
@@ -56,9 +65,12 @@ public class Server {
     }
     
     private class ResponseDataEncoder extends MessageToByteEncoder<ResponseData> {
+        private final Charset charset = Charset.forName("UTF-8");
+
         @Override
         protected void encode(ChannelHandlerContext ctx, ResponseData msg, ByteBuf out) throws Exception {
-            out.writeInt(msg.getIntValue());
+            out.writeInt(msg.getStringValue().length());
+            out.writeCharSequence(msg.getStringValue(), charset);
         }
     }
     

@@ -47,8 +47,8 @@ public class Form extends javax.swing.JFrame {
                 label = new JLabel(circle);
                 label.setBounds(0,0,circle.getIconWidth(),circle.getIconHeight());
             }
-            fields.get(num - 1).add(label);
-            fields.get(num - 1).updateUI();
+            fields.get(num).add(label);
+            fields.get(num).updateUI();
         });
     }
     
@@ -518,6 +518,7 @@ public class Form extends javax.swing.JFrame {
     }//GEN-LAST:event_reconnectButtonActionPerformed
 
     private void field1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_field1MousePressed
+        SetField(0,"x");
         SetField(1,"x");
         SetField(2,"x");
         SetField(3,"x");
@@ -526,7 +527,6 @@ public class Form extends javax.swing.JFrame {
         SetField(6,"x");
         SetField(7,"x");
         SetField(8,"x");
-        SetField(9,"x");
     }//GEN-LAST:event_field1MousePressed
 
     private void field2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_field2MousePressed

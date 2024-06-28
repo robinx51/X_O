@@ -1,7 +1,8 @@
 com\x_o_server\Server$1.class
-com\x_o_server\RequestData.class
+com\x_o_server\data\RequestData.class
+com\x_o_server\data\ResponseData.class
 com\x_o_server\ClientHandler.class
 com\x_o_server\Server$ResponseDataEncoder.class
 com\x_o_server\Server.class
-com\x_o_server\ResponseData.class
 com\x_o_server\Server$RequestDecoder.class
+com\x_o_server\Game.class

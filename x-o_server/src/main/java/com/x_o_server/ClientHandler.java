@@ -1,5 +1,7 @@
 package com.x_o_server;
 
+import com.x_o_server.data.ResponseData;
+import com.x_o_server.data.RequestData;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 
@@ -9,7 +11,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     
     private void HandleMessage(ChannelHandlerContext ctx, RequestData requestData) {
         ResponseData responseData = new ResponseData();
-        responseData.setIntValue(requestData.getIntValue() * 2);
+        responseData.setStringValue("Hello world!");
         ctx.writeAndFlush(responseData);
         System.out.println(id + ": " + requestData.getIntValue() + " | " + requestData.getStringValue());
     }

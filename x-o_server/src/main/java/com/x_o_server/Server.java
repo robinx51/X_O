@@ -24,14 +24,19 @@ public class Server {
     }
     
     private static void workLoop() {
-        Scanner console = new Scanner(System.in);
-        while (true) {
-            String str = console.nextLine();
-            if ("stop".equals(str) || "стоп".equals(str)) {
-                StopServer();
-                break;
+        Thread workThread = new Thread(() -> {
+            Scanner console = new Scanner(System.in);
+            while (true) {
+                String str = console.nextLine();
+                if ("stop".equals(str) || "стоп".equals(str)) {
+                    StopServer();
+                    break;
+                }
             }
-        }
+        });
+        workThread.setName("workLoop-thread");
+        workThread.setDaemon(true);
+        workThread.start();
     }
     
     private static void StopServer() {
@@ -86,7 +91,7 @@ public class Server {
                     }
                 }).option(ChannelOption.SO_BACKLOG, 128)
                   .childOption(ChannelOption.SO_KEEPALIVE, true);
-
+                
                 ChannelFuture channelFuture = b.bind(PORT).sync();
                 serverChannel = channelFuture.channel();
                 System.out.println("Server started on " + PORT);
@@ -100,7 +105,6 @@ public class Server {
             }
         });
         serverThread.setName("server-thread");
-        serverThread.setDaemon(true);
         serverThread.start();
     }
     

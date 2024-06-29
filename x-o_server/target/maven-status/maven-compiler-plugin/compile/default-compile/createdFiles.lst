@@ -5,4 +5,5 @@ com\x_o_server\ClientHandler.class
 com\x_o_server\Server$ResponseDataEncoder.class
 com\x_o_server\Server.class
 com\x_o_server\Server$RequestDecoder.class
+com\x_o_server\ServerProcess.class
 com\x_o_server\Game.class

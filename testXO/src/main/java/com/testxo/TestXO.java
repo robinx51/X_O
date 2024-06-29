@@ -8,6 +8,8 @@ public class TestXO {
         String player1 = "Nikita", player2 = "Dima";
         Game testGame = new Game(player1, player2);
         
+        System.out.println(testGame);
+        
         int queue = 0;
         Scanner console = new Scanner(System.in);
         while(true) {

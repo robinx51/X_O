@@ -11,18 +11,16 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 import java.nio.charset.Charset;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Server {
     private final int PORT;
-    private static LinkedList<Channel> list;
+    private final ServerProcess process;
     private static Channel serverChannel;
     
     public Server() {
         PORT = 8080;
-        list = new LinkedList<>();
+        process = new ServerProcess();
     }
     
     private static void workLoop() {
@@ -32,13 +30,6 @@ public class Server {
             if ("stop".equals(str) || "стоп".equals(str)) {
                 StopServer();
                 break;
-            } else {
-                String[] data = str.split(" ", 2);
-                ResponseData responseData = new ResponseData();
-                responseData.setStringValue((data[1]));
-                int num = Integer.parseInt(data[0]);
-                if (list.size() > num )
-                    list.get(num).writeAndFlush(responseData);
             }
         }
     }
@@ -69,8 +60,12 @@ public class Server {
 
         @Override
         protected void encode(ChannelHandlerContext ctx, ResponseData msg, ByteBuf out) throws Exception {
+            out.writeInt(msg.getIntValue());
             out.writeInt(msg.getStringValue().length());
             out.writeCharSequence(msg.getStringValue(), charset);
+            out.writeInt(msg.getOtherStringValue().length());
+            out.writeCharSequence(msg.getOtherStringValue(), charset);
+            out.writeBoolean(msg.getBoolValue());
         }
     }
     
@@ -86,10 +81,8 @@ public class Server {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline().addLast(new RequestDecoder(), 
-                          new ResponseDataEncoder(), 
-                          new ClientHandler());
-                        list.add(ch.read());
-                        //System.out.println("Добавлен канал");
+                                new ResponseDataEncoder(), 
+                                new ClientHandler(process));
                     }
                 }).option(ChannelOption.SO_BACKLOG, 128)
                   .childOption(ChannelOption.SO_KEEPALIVE, true);

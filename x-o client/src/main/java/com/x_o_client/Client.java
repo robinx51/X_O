@@ -12,15 +12,32 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.Scanner;
 
 public class Client {
     private Channel channel;
-    private Thread workThread;
     private final Form form;
     
     public Client(Form form) {
         this.form = form;
+    }
+    
+    public void sendMessage(String str) {
+        if (channel.isOpen()) {
+            RequestData msg = new RequestData();
+            msg.setIntValue(0);
+            msg.setStringValue(
+              str);
+            channel.writeAndFlush(msg);
+        }
+    }
+    public void sendMessage(String str, int num) {
+        if (channel.isOpen()) {
+            RequestData msg = new RequestData();
+            msg.setIntValue(num);
+            msg.setStringValue(
+              str);
+            channel.writeAndFlush(msg);
+        }
     }
     
     public void CloseConnection() {
@@ -29,26 +46,6 @@ public class Client {
             channel.close();
             channel = null;
         }
-    }
-    
-    private void workLoop() {
-        workThread = new Thread(() -> {
-            Scanner console = new Scanner(System.in);
-            while (channel.isOpen()) {
-                String str = console.nextLine();
-                if ("stop".equals(str) || "стоп".equals(str)) {
-                    CloseConnection();
-                    break;
-                } else {
-                    RequestData msg = new RequestData();
-                    msg.setIntValue(Integer.parseInt(str));
-                    msg.setStringValue("all works");
-                    channel.writeAndFlush(msg);
-                }
-            }
-        });
-        workThread.setName("work-thread");
-        workThread.start();
     }
     
     public class RequestDataEncoder extends MessageToByteEncoder<RequestData> {
@@ -73,8 +70,12 @@ public class Client {
             ByteBuf in, List<Object> out) throws Exception {
 
             ResponseData data = new ResponseData();
+            data.setIntValue(in.readInt());
             int strLen = in.readInt();
             data.setStringValue(in.readCharSequence(strLen, charset).toString());
+            strLen = in.readInt();
+            data.setOtherStringValue(in.readCharSequence(strLen, charset).toString());
+            data.setBoolValue(in.readBoolean());
             out.add(data);
         }
     }
@@ -94,7 +95,8 @@ public class Client {
                     public void initChannel(SocketChannel ch) 
                       throws Exception {
                         ch.pipeline().addLast(new RequestDataEncoder(), 
-                          new ResponseDataDecoder(), new ServerHandler());
+                          new ResponseDataDecoder(), 
+                          new ServerHandler(form));
                     }
                 });
 
@@ -122,15 +124,4 @@ public class Client {
         clientThread.setDaemon(true);
         clientThread.start();
     }
-    
-//    public static void main(String[] args) {
-//        new Client().run();
-//        new Form().setVisible(true);
-//        try {
-//            Thread.sleep(2000);
-//            workLoop();
-//        } catch (InterruptedException ex) {
-//            System.err.println(ex.getMessage());
-//        }
-//    }
 }

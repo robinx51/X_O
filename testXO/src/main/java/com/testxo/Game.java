@@ -16,6 +16,11 @@ public class Game {
         steps = 0;
     }
     
+    @Override
+    public String toString() {
+        return playersList.firstKey() + " vs " + playersList.lastKey();
+    }
+    
     public int setScore(int data, String player) {
         int row = (data / 3);
         int column = (data % 3);
